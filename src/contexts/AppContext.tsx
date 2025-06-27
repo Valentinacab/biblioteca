@@ -94,6 +94,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setReservations(prev => [...prev, newReservation]);
     
+    // Detectar el bug antes de actualizar el stock
+    const expectedAvailable = book.availableCopies - 1;
+    const actualAvailable = Math.max(0, book.availableCopies - 2);
+    
+    if (expectedAvailable !== actualAvailable) {
+      detectBug('BUG_RESERVA_RESTA_DOS_COPIAS');
+    }
+    
     // BUG: Resta 2 copias en lugar de 1
     setBooks(prev => prev.map(b => 
       b.id === bookId 
@@ -230,7 +238,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         'BUG_ISBN_DUPLICADO': 'El sistema permite agregar libros con ISBN duplicado',
         'BUG_ELIMINAR_CON_RESERVAS': 'Se permite eliminar libros que pueden tener reservas activas',
         'BUG_PAGINACION_INCORRECTA': 'La paginación permite navegar a páginas inexistentes',
-        'BUG_EXPORTACION_RESERVAS_INCOMPLETA': 'La exportación de reservas está incompleta - faltan campos importantes'
+        'BUG_EXPORTACION_RESERVAS_INCOMPLETA': 'La exportación de reservas está incompleta - faltan campos importantes',
+        'BUG_RESERVA_RESTA_DOS_COPIAS': 'Al reservar un libro se restan 2 copias en lugar de 1'
       };
       
       const displayMessage = bugMessages[bugDescription] || bugDescription;
