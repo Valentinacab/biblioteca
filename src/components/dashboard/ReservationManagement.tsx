@@ -34,11 +34,12 @@ const ReservationManagement: React.FC = () => {
   };
 
   const handleViewDetails = (reservationId: string) => {
-    // BUG: El botón "Ver Detalles" no funciona correctamente
-    if (reservationId === '1') {
-      detectBug('El botón "Ver Detalles" no funciona para algunas reservas');
+    // BUG: Solo funciona para reservas con ID par
+    if (parseInt(reservationId) % 2 !== 0) {
+      detectBug('BUG_VER_DETALLES_ID_IMPAR');
       return;
     }
+    
     setShowDetails(reservationId);
   };
 
@@ -339,3 +340,5 @@ const ReservationDetailsModal: React.FC<{
 };
 
 export default ReservationManagement;
+
+export default ReservationManagement
