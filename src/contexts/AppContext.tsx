@@ -46,6 +46,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [fines, setFines] = useState<Fine[]>(initialFines);
   const [bugsDetected, setBugsDetected] = useState(0);
+  const [detectedBugs, setDetectedBugs] = useState<Set<string>>(new Set());
 
   const login = (username: string, password: string): boolean => {
     // BUG: Permite login con espacios en blanco
@@ -210,29 +211,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const detectBug = (bugDescription: string) => {
-    setBugsDetected(prev => prev + 1);
-    
-    // Mostrar popup de bug detectado
-    const popup = document.createElement('div');
-    popup.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 animate-bounce max-w-sm';
-    popup.innerHTML = `
-      <div class="flex items-start space-x-3">
-        <span class="text-2xl">🐛</span>
-        <div>
-          <p class="font-bold text-lg">¡Bug Detectado!</p>
-          <p class="text-sm mt-1">${bugDescription}</p>
-          <p class="text-xs mt-2 opacity-75">Total detectados: ${bugsDetected + 1}</p>
+    // Solo detectar el bug si no ha sido detectado antes
+    if (!detectedBugs.has(bugDescription)) {
+      setDetectedBugs(prev => new Set([...prev, bugDescription]));
+      setBugsDetected(prev => prev + 1);
+      
+      // Mapear códigos de bug a mensajes legibles
+      const bugMessages: { [key: string]: string } = {
+        'BUG_VER_DETALLES_ID_IMPAR': 'El botón "Ver Detalles" solo funciona para reservas con ID par',
+        'BUG_RESEÑAS_MULTIPLES': 'El sistema permite que un usuario haga múltiples reseñas del mismo libro',
+        'BUG_BUSQUEDA_CASE_SENSITIVE': 'La búsqueda es case-sensitive y no encuentra "gabriel" pero sí "Gabriel"',
+        'BUG_FILTRO_INVERTIDO': 'El filtro de categorías funciona al revés para Literatura y Clásicos',
+        'BUG_STOCK_NO_RESTAURA': 'El stock no se restaura al devolver libros',
+        'BUG_RESERVAS_ACTIVAS_CONTADOR': 'El contador de reservas activas muestra un número incorrecto (+1 extra)',
+        'BUG_EXPORTACION_INCOMPLETA': 'La exportación de libros está incompleta - faltan campos importantes',
+        'BUG_IMPORTACION_NO_IMPLEMENTADA': 'La función de importar libros no está implementada',
+        'BUG_COPIAS_DISPONIBLES_MAYOR': 'El formulario permite que las copias disponibles sean mayores que el total',
+        'BUG_ISBN_DUPLICADO': 'El sistema permite agregar libros con ISBN duplicado',
+        'BUG_ELIMINAR_CON_RESERVAS': 'Se permite eliminar libros que pueden tener reservas activas',
+        'BUG_PAGINACION_INCORRECTA': 'La paginación permite navegar a páginas inexistentes',
+        'BUG_EXPORTACION_RESERVAS_INCOMPLETA': 'La exportación de reservas está incompleta - faltan campos importantes'
+      };
+      
+      const displayMessage = bugMessages[bugDescription] || bugDescription;
+      
+      // Mostrar popup de bug detectado
+      const popup = document.createElement('div');
+      popup.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 animate-bounce max-w-sm';
+      popup.innerHTML = `
+        <div class="flex items-start space-x-3">
+          <span class="text-2xl">🐛</span>
+          <div>
+            <p class="font-bold text-lg">¡Bug Detectado!</p>
+            <p class="text-sm mt-1">${displayMessage}</p>
+            <p class="text-xs mt-2 opacity-75">Total detectados: ${bugsDetected + 1}</p>
+          </div>
         </div>
-      </div>
-    `;
-    
-    document.body.appendChild(popup);
-    
-    setTimeout(() => {
-      if (popup.parentNode) {
-        popup.parentNode.removeChild(popup);
-      }
-    }, 4000);
+      `;
+      
+      document.body.appendChild(popup);
+      
+      setTimeout(() => {
+        if (popup.parentNode) {
+          popup.parentNode.removeChild(popup);
+        }
+      }, 4000);
+    }
   };
 
   const searchBooks = (query: string): Book[] => {
@@ -261,6 +285,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addReview = (bookId: string, rating: number, comment: string): boolean => {
     if (!currentUser) return false;
     
+    // BUG: Permite múltiples reseñas del mismo usuario para el mismo libro
+    const book = books.find(b => b.id === bookId);
+    if (book && book.reviews) {
+      const existingReview = book.reviews.find(r => r.userId === currentUser.id);
+      if (existingReview) {
+        detectBug('BUG_RESEÑAS_MULTIPLES');
+        return false;
+      }
+    }
+    
     const newReview: Review = {
       id: Date.now().toString(),
       userId: currentUser.id,
@@ -274,7 +308,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (book.id === bookId) {
         const updatedReviews = [...(book.reviews || []), newReview];
         // BUG: Cálculo incorrecto del rating promedio
-        const avgRating = updatedReviews.reduce((sum, review) => sum + review.rating, 0) / (updatedReviews.length + 1); // BUG: +1 extra en divisor
+        const avgRating = updatedReviews.reduce((sum, review) => sum + review.rating, 0) / updatedReviews.length;
         
         return {
           ...book,
@@ -313,11 +347,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const getBookDetails = (bookId: string): Book | null => {
-    // BUG: A veces devuelve el libro incorrecto
-    const books_copy = [...books];
-    if (bookId === '1') {
-      return books_copy[1]; // BUG: Devuelve índice incorrecto para el libro con ID '1'
-    }
     return books.find(b => b.id === bookId) || null;
   };
 
