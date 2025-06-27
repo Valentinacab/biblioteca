@@ -61,12 +61,12 @@ const BookManagement: React.FC = () => {
     a.download = 'libros.csv';
     a.click();
     
-    detectBug('La exportación de libros está incompleta - faltan campos importantes');
+    detectBug('BUG_EXPORTACION_INCOMPLETA');
   };
 
   const handleImportBooks = () => {
     // BUG: Función de importación no implementada
-    detectBug('La función de importar libros no está implementada');
+    detectBug('BUG_IMPORTACION_NO_IMPLEMENTADA');
     alert('Función no disponible');
   };
 
@@ -236,12 +236,12 @@ const BookFormModal: React.FC<{
     
     // BUG: Permite que las copias disponibles sean mayores que el total
     if (formData.availableCopies > formData.totalCopies) {
-      onBugDetect('El formulario permite que las copias disponibles sean mayores que el total');
+      onBugDetect('BUG_COPIAS_DISPONIBLES_MAYOR');
     }
     
     // BUG: No valida ISBN duplicado
     if (!book && formData.isbn === '978-84-376-0494-7') {
-      onBugDetect('El sistema permite agregar libros con ISBN duplicado');
+      onBugDetect('BUG_ISBN_DUPLICADO');
     }
     
     onSave(formData);
