@@ -366,12 +366,6 @@ const ClientDashboard: React.FC = () => {
                       >
                         Renovar
                       </button>
-                      <button
-                        onClick={() => handleCancelReservation(reservation.id)}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
-                      >
-                        Cancelar
-                      </button>
                     </div>
                   )}
                 </div>
