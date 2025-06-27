@@ -93,7 +93,7 @@ const AdminDashboard: React.FC = () => {
                   className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => {
                     if (index === 1) { // Reservas Activas con bug
-                      handleBugDetection('El contador de reservas activas muestra un número incorrecto (+1 extra)');
+                      handleBugDetection('BUG_RESERVAS_ACTIVAS_CONTADOR');
                     }
                   }}
                 >
