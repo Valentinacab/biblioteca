@@ -340,5 +340,3 @@ const ReservationDetailsModal: React.FC<{
 };
 
 export default ReservationManagement;
-
-export default ReservationManagement
