@@ -39,8 +39,28 @@ const ClientDashboard: React.FC = () => {
     const results = searchBooks(searchQuery);
     setSearchResults(results);
     
-    // BUG: Si la búsqueda no encuentra resultados pero hay libros que coinciden case-insensitive
-    if (results.length === 0 && searchQuery.toLowerCase() === 'gabriel') {
+    // BUG: Detectar cuando la búsqueda case-sensitive falla pero debería encontrar resultados
+    if (results.length === 0 && searchQuery.trim() !== '') {
+      // Verificar si hay resultados con búsqueda case-insensitive
+      const caseInsensitiveResults = books.filter(book => 
+        book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.isbn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.category.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      
+      if (caseInsensitiveResults.length > 0) {
+        detectBug('BUG_BUSQUEDA_CASE_SENSITIVE');
+      }
+    }
+  };
+
+  // También detectar el bug cuando se escribe en el campo de búsqueda
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    
+    // Detectar inmediatamente si escriben "gabriel" (minúscula)
+    if (value.toLowerCase() === 'gabriel' && value !== 'Gabriel') {
       detectBug('BUG_BUSQUEDA_CASE_SENSITIVE');
     }
   };
@@ -173,7 +193,7 @@ const ClientDashboard: React.FC = () => {
                       type="text"
                       placeholder="Buscar por título, autor o ISBN..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchInputChange(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
