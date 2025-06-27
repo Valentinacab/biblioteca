@@ -41,7 +41,7 @@ const ClientDashboard: React.FC = () => {
     
     // BUG: Si la búsqueda no encuentra resultados pero hay libros que coinciden case-insensitive
     if (results.length === 0 && searchQuery.toLowerCase() === 'gabriel') {
-      detectBug('La búsqueda es case-sensitive y no encuentra "gabriel" pero sí "Gabriel"');
+      detectBug('BUG_BUSQUEDA_CASE_SENSITIVE');
     }
   };
 
@@ -52,7 +52,7 @@ const ClientDashboard: React.FC = () => {
     
     // BUG: El filtro funciona al revés para algunas categorías
     if ((category === 'Literatura' || category === 'Clásicos') && filtered.length === 0) {
-      detectBug('El filtro de categorías funciona al revés para Literatura y Clásicos');
+      detectBug('BUG_FILTRO_INVERTIDO');
     }
   };
 
@@ -99,12 +99,6 @@ const ClientDashboard: React.FC = () => {
       detectBug('No se pueden obtener los detalles del libro seleccionado');
       return;
     }
-    
-    // BUG: A veces muestra detalles del libro incorrecto
-    if (bookId === '1' && book.id !== '1') {
-      detectBug('Los detalles del libro muestran información incorrecta');
-    }
-    
     setShowBookDetails(bookId);
   };
 
